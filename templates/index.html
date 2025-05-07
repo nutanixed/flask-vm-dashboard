@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PC33 Virtual Machines | Nutanix Lab</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -16,12 +16,6 @@
             <i class="fas fa-cloud"></i>
             <span>Nutanix Lab</span>
         </div>
-        <nav class="nav-links">
-            <a href="#"><i class="fas fa-home"></i> Home</a>
-            <a href="#"><i class="fas fa-server"></i> Clusters</a>
-            <a href="#"><i class="fas fa-desktop"></i> VMs</a>
-            <a href="#"><i class="fas fa-cog"></i> Settings</a>
-        </nav>
     </div>
 </header>
 
@@ -40,6 +34,9 @@
         <div class="card-header">
             <h2><i class="fas fa-desktop"></i> Powered On Virtual Machines</h2>
             <div class="card-actions">
+                <div class="search-container" style="margin-right: 1rem;">
+                    <input type="text" id="vm-search" placeholder="Search VM name..." class="search-input">
+                </div>
                 <button class="btn btn-primary">
                     <i class="fas fa-sync-alt btn-icon"></i> Refresh
                 </button>
@@ -73,7 +70,7 @@
     <div class="footer-container">
         <img src="https://raw.githubusercontent.com/nutanixed/flask-vm-dashboard/main/templates/nutanix_logo.png" alt="Nutanix Logo" class="nutanix-logo">
         <div class="copyright">
-            &copy; 2023 Nutanix, Inc. All rights reserved.
+            &copy; 2025 Nutanix, Inc. All rights reserved.
         </div>
     </div>
 </footer>
@@ -84,7 +81,34 @@
         setTimeout(function() {
             fetchVMs();
         }, 1000);
+
+        // Add search functionality
+        const searchInput = document.getElementById('vm-search');
+        searchInput.addEventListener('input', filterVMs);
+
+        // Add refresh button functionality
+        const refreshButton = document.querySelector('.btn-primary');
+        refreshButton.addEventListener('click', function() {
+            // Clear the search input
+            searchInput.value = '';
+            // Fetch fresh VM data
+            fetchVMs();
+        });
     });
+
+    function filterVMs() {
+        const searchTerm = document.getElementById('vm-search').value.toLowerCase();
+        const rows = document.querySelectorAll('#vm-table tbody tr');
+        
+        rows.forEach(row => {
+            const vmName = row.querySelector('td:first-child').textContent.toLowerCase();
+            if (vmName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
 
     function fetchVMs() {
         // In a real implementation, this would fetch from your API

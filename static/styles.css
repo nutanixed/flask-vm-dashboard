@@ -14,7 +14,7 @@
 }
 
 body {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background-color: var(--nutanix-light);
     margin: 0;
     padding: 0;
@@ -273,4 +273,34 @@ copyright {
     .nutanix-logo {
         height: 35px;
     }
+}
+
+.search-container {
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-input {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--nutanix-gray);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--iris-purple);
+    box-shadow: 0 0 0 2px rgba(120, 85, 250, 0.1);
+}
+
+.search-input::placeholder {
+    color: #999;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
