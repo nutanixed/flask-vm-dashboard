@@ -134,7 +134,7 @@ location / {
 
 - If you encounter a `502 Bad Gateway`, ensure that Flask is running and listening on port 5000. Check your logs for errors.
 - If Nginx isn't working properly, run `sudo nginx -t` to check for configuration errors.
-- Disabled SELinux enforcement
+- Disable SELinux enforcement
 ```bash
 sudo setenforce 0
 ```
