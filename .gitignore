@@ -3,3 +3,5 @@ __pycache__/
 certs/
 *.pyc
 templates/index.html.initial
+templates/index.html.keep
+app.py.keep
