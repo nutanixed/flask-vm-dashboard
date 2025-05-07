@@ -2,3 +2,4 @@
 __pycache__/
 certs/
 *.pyc
+templates/index.html.initial
