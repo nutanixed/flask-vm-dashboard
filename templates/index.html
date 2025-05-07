@@ -18,6 +18,8 @@
             --nutanix-success: #28A745;
             --nutanix-warning: #FFC107;
             --nutanix-danger: #DC3545;
+            --iris-purple: #7855fa;
+            --charcoal-gray: #131313;
         }
 
         body {
@@ -29,9 +31,9 @@
             line-height: 1.6;
         }
 
-        /* Header with Nutanix-style gradient */
+        /* Header with new gradient */
         header {
-            background: linear-gradient(135deg, var(--nutanix-primary) 0%, var(--nutanix-secondary) 100%);
+            background: linear-gradient(135deg, var(--iris-purple) 0%, var(--charcoal-gray) 100%);
             color: var(--nutanix-white);
             padding: 1rem 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -95,7 +97,7 @@
         }
 
         .page-header h1 {
-            color: var(--nutanix-primary);
+            color: var(--iris-purple);
             font-weight: 700;
             margin-bottom: 0.5rem;
             font-size: 2rem;
@@ -127,7 +129,7 @@
 
         .card-header h2 {
             margin: 0;
-            color: var(--nutanix-primary);
+            color: var(--iris-purple);
             font-size: 1.25rem;
             font-weight: 600;
         }
@@ -148,7 +150,7 @@
         }
 
         th {
-            background-color: var(--nutanix-primary);
+            background-color: var(--iris-purple);
             color: var(--nutanix-white);
             padding: 0.75rem 1rem;
             text-align: left;
@@ -188,12 +190,12 @@
         }
 
         .btn-primary {
-            background-color: var(--nutanix-primary);
+            background-color: var(--iris-purple);
             color: var(--nutanix-white);
         }
 
         .btn-primary:hover {
-            background-color: #023a5e;
+            background-color: #5d3be8;
             transform: translateY(-1px);
         }
 
@@ -243,7 +245,7 @@
 
         /* Footer */
         footer {
-            background-color: var(--nutanix-dark);
+            background-color: var(--charcoal-gray);
             color: var(--nutanix-white);
             padding: 2rem 0;
             margin-top: 3rem;
@@ -260,15 +262,16 @@
         }
 
         .nutanix-logo {
-            height: 30px;
+            height: 40px;
             width: auto;
-            filter: brightness(0) invert(1);
+            object-fit: contain;
         }
 
         .copyright {
             text-align: center;
             font-size: 0.875rem;
             opacity: 0.7;
+            margin-top: 0.5rem;
         }
 
         /* Responsive adjustments */
@@ -284,6 +287,10 @@
             
             .page-header h1 {
                 font-size: 1.5rem;
+            }
+            
+            .nutanix-logo {
+                height: 35px;
             }
         }
     </style>
@@ -351,8 +358,7 @@
 
 <footer>
     <div class="footer-container">
-        <!-- Base64 encoded Nutanix logo -->
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDMwMCI+PHBhdGggZD0iTTE0OC41IDc1YzAtNDEuNCAzMy42LTc1IDc1LTc1czc1IDMzLjYgNzUgNzUtMzMuNiA3NS03NSA3NS03NS0zMy42LTc1LTc1em0xMTcuMyAwYzAtMjMuMy0xOC45LTQyLjItNDIuMi00Mi4ycy00Mi4yIDE4LjktNDIuMiA0Mi4yIDE4LjkgNDIuMiA0Mi4yIDQyLjIgNDIuMi0xOC45IDQyLjItNDIuMnoiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNMzU1LjUgNzVjMC00MS40IDMzLjYtNzUgNzUtNzVzNzUgMzMuNiA3NSA3NS0zMy42IDc1LTc1IDc1LTc1LTMzLjYtNzUtNzV6bTExNy4zIDBjMC0yMy4zLTE4LjktNDIuMi00Mi4yLTQyLjJzLTQyLjIgMTguOS00Mi4yIDQyLjIgMTguOSA0Mi4yIDQyLjIgNDIuMiA0Mi4yLTE4LjkgNDIuMi00Mi4yeiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik01NjIuNSA3NWMwLTQxLjQgMzMuNi03NSA3NS03NXM3NSAzMy42IDc1IDc1LTMzLjYgNzUtNzUgNzUtNzUtMzMuNi03NS03NXptMTE3LjMgMGMwLTIzLjMtMTguOS00Mi4yLTQyLjItNDIuMnMtNDIuMiAxOC45LTQyLjIgNDIuMiAxOC45IDQyLjIgNDIuMiA0Mi4yIDQyLjItMTguOSA0Mi4yLTQyLjJ6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTc2OS41IDc1YzAtNDEuNCAzMy42LTc1IDc1LTc1czc1IDMzLjYgNzUgNzUtMzMuNiA3NS03NSA3NS03NS0zMy42LTc1LTc1em0xMTcuMyAwYzAtMjMuMy0xOC45LTQyLjItNDIuMi00Mi4ycy00Mi4yIDE4LjktNDIuMiA0Mi4yIDE4LjkgNDIuMiA0Mi4yIDQyLjIgNDIuMi0xOC45IDQyLjItNDIuMnoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=" alt="Nutanix Logo" class="nutanix-logo">
+        <img src="https://raw.githubusercontent.com/nutanixed/flask-vm-dashboard/main/templates/nutanix_logo.png" alt="Nutanix Logo" class="nutanix-logo">
         <div class="copyright">
             &copy; 2023 Nutanix, Inc. All rights reserved.
         </div>
