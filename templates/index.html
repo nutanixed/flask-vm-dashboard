@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC33</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --nutanix-purple: #4E2A84;
+            --nutanix-dark-purple: #3C1A67;
+            --nutanix-light-purple: #9B66B0;
+            --nutanix-gray: #F4F7FC;
+            --nutanix-light-gray: #F1F3F8;
+            --nutanix-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--nutanix-light-gray);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: var(--nutanix-purple);
+            color: var(--nutanix-white);
+            padding: 15px;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--nutanix-white);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--nutanix-purple);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--nutanix-purple);
+            color: var(--nutanix-white);
+        }
+
+        tr:hover {
+            background-color: var(--nutanix-light-gray);
+        }
+
+        .btn-vnc {
+            padding: 6px 12px;
+            background-color: var(--nutanix-purple);
+            color: var(--nutanix-white);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-vnc:hover {
+            background-color: var(--nutanix-dark-purple);
+        }
+
+        .error-message {
+            color: var(--nutanix-purple);
+            text-align: center;
+            font-size: 1.2em;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>pc33.ntnxlab.local</h1>
+</header>
+
+<div class="container">
+    <h2>Virtual Machines (Powered On)</h2>
+    
+    <div id="error-message" class="error-message"></div>
+    
+    <table id="vm-table">
+        <thead>
+            <tr>
+                <th>VM Name</th>
+                <th>Console</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- VM rows will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    fetch('/api/vms')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.querySelector('#vm-table tbody');
+            if (data.length === 0) {
+                document.getElementById('error-message').textContent = 'No VMs found.';
+                document.getElementById('error-message').style.display = 'block';
+            } else {
+                data.forEach(vm => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${vm.name}</td>
+                        <td><a href="https://ntnxlab.ddns.net:8443/console/vnc_auto.html?path=proxy/${vm.uuid}" class="btn-vnc" target="_blank">Launch Console</a></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        })
+        .catch(error => {
+            document.getElementById('error-message').textContent = 'Error loading VM data. Please try again later.';
+            document.getElementById('error-message').style.display = 'block';
+        });
+</script>
+
+</body>
+</html>
