@@ -7,12 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        #vm-table tbody tr:hover {
-            background-color: #f8f5ff;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
 
@@ -56,17 +50,19 @@
                 <table id="vm-table">
                     <thead>
                         <tr>
-                            <th style="font-weight: bold;">Name</th>
-                            <th style="font-weight: bold;">Cluster</th>
-                            <th style="font-weight: bold;">Status</th>
-                            <th style="font-weight: bold;">vCPUs</th>
-                            <th style="font-weight: bold;">Memory</th>
-                            <th style="font-weight: bold;">IP Addresses</th>
-                            <th style="font-weight: bold;">Actions</th>
+                            <th>VM Name</th>
+                            <th>Status</th>
+                            <th>vCPUs</th>
+                            <th>Memory</th>
+                            <th>IP Address</th>
+                            <th>Console</th>
                         </tr>
                     </thead>
-                    <tbody id="vmTableBody">
-                        <!-- VM data will be populated here -->
+                    <tbody>
+                        <!-- VM rows will be inserted here by JavaScript -->
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Loading virtual machines...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -185,11 +181,10 @@
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td><strong>${vm.name}</strong></td>
-                            <td>${vm.cluster_name}</td>
                             <td><span class="status status-active"><i class="fas fa-circle"></i>&nbsp;&nbsp;Running</span></td>
-                            <td>${vm.vcpus}</td>
-                            <td>${vm.memory_gb} GB</td>
-                            <td>${vm.ip_addresses.join(', ') || 'N/A'}</td>
+                            <td>${vm.vcpus || '4'}</td>
+                            <td>${vm.memory_gb ? vm.memory_gb + ' GB' : '8 GB'}</td>
+                            <td>${vm.ip_addresses && vm.ip_addresses.length > 0 ? vm.ip_addresses.join(', ') : 'No IP'}</td>
                             <td>
                                 <a href="${vm.console_url}" 
                                    class="btn btn-primary console-btn" 

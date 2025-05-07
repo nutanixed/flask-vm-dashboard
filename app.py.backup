@@ -14,32 +14,6 @@ PRISM_IP = "pc33.ntnxlab.local"
 PRISM_USERNAME = "admin"
 PRISM_PASSWORD = "Nutanix/4u!"
 
-def get_cluster_info():
-    url = f"https://{PRISM_IP}:9440/api/nutanix/v3/clusters/list"
-    payload = {
-        "kind": "cluster",
-        "length": 1000
-    }
-    
-    try:
-        response = requests.post(
-            url,
-            auth=HTTPBasicAuth(PRISM_USERNAME, PRISM_PASSWORD),
-            json=payload,
-            verify=False,
-            timeout=30
-        )
-        response.raise_for_status()
-        clusters_data = response.json()
-        
-        # Return the first cluster's name (since we know it's CLUS13)
-        if clusters_data.get("entities"):
-            return clusters_data["entities"][0].get("status", {}).get("name", "Unknown Cluster")
-        return "Unknown Cluster"
-    except Exception as e:
-        print(f"Error getting cluster info: {str(e)}")
-        return "Unknown Cluster"
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -62,9 +36,6 @@ def get_vms():
         )
         response.raise_for_status()
         vms_data = response.json()
-
-        # Get cluster name once
-        cluster_name = get_cluster_info()
 
         vms = []
         for vm in vms_data.get("entities", []):
@@ -102,8 +73,7 @@ def get_vms():
                     "vcpus": num_vcpus,
                     "memory_gb": memory_gb,
                     "console_url": console_url,
-                    "ip_addresses": ip_addresses,
-                    "cluster_name": cluster_name
+                    "ip_addresses": ip_addresses
                 })
 
         vms.sort(key=lambda x: x["name"].lower())
