@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import requests
 from requests.auth import HTTPBasicAuth
 import urllib3
@@ -7,6 +7,8 @@ import logging
 from functools import lru_cache
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # Load environment variables from .env file
 load_dotenv()
@@ -30,6 +32,13 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Create Flask app, specify static folder path
 app = Flask(__name__, static_folder='static')
+
+# Initialize rate limiter
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 # Prism Central Configuration from environment variables
 PRISM_IP = os.getenv('PRISM_IP', 'pc33.ntnxlab.local')
@@ -90,8 +99,32 @@ def get_cluster_info():
 def home():
     return render_template('index.html')
 
+@app.route('/health')
+@limiter.exempt
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Test Prism Central connection
+        get_cluster_info()
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "version": "1.0.0"
+        })
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return jsonify({
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
 @app.route('/api/vms')
+@limiter.limit("30 per minute")
 def get_vms():
+    # Log request
+    logger.info(f"VM list requested from {request.remote_addr}")
+    
     url = f"https://{PRISM_IP}:9440/api/nutanix/v3/vms/list"
     payload = {
         "kind": "vm",
@@ -165,6 +198,15 @@ def get_vms():
     except Exception as e:
         logger.error(f"Server error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
+
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('500.html'), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=False)
