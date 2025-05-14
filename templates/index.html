@@ -3,229 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nutanix Lab VM Dashboard - Manage and access virtual machines in the Nutanix lab environment">
+    <meta name="theme-color" content="#7855fa">
+    <meta name="author" content="Nutanix">
+    <meta name="robots" content="noindex, nofollow">
     <title>PC33 Virtual Machines | Nutanix Lab</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        #vm-table tbody tr:hover {
-            background-color: #f8f5ff;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
-
-<header>
-    <div class="header-container">
-        <div class="logo">
-            <i class="fas fa-cloud"></i>
-            <span>Nutanix Lab</span>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-cloud" aria-hidden="true"></i>
+                <span>Nutanix Lab</span>
+            </div>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+            </button>
         </div>
-    </div>
-</header>
+    </header>
 
-<div class="main-container">
-    <div class="page-header">
-        <h1>PC33 Virtual Machines</h1>
-        <p>Manage and access your virtual machines in the Nutanix lab environment</p>
-    </div>
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    
+    <main class="main-container">
+        <section class="page-header">
+            <h1>PC33 Virtual Machines</h1>
+            <p>Manage and access your virtual machines in the Nutanix lab environment</p>
+        </section>
 
-    <div id="error-message" class="alert alert-danger" style="display: none;">
-        <i class="fas fa-exclamation-circle alert-icon"></i>
-        <span class="alert-text"></span>
-    </div>
+        <div id="error-message" class="alert alert-danger" role="alert" aria-live="assertive" style="display: none;">
+            <i class="fas fa-exclamation-circle alert-icon" aria-hidden="true"></i>
+            <span class="alert-text"></span>
+        </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h2><i class="fas fa-desktop"></i> Powered On Virtual Machines</h2>
-            <div class="card-actions">
-                <div class="search-container" style="margin-right: 1rem;">
-                    <input type="text" id="vm-search" placeholder="Search VM name..." class="search-input">
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-desktop" aria-hidden="true"></i> Powered On Virtual Machines</h2>
+                <div class="card-actions">
+                    <div class="search-container">
+                        <label for="vm-search" class="sr-only">Search VM name</label>
+                        <input type="text" id="vm-search" placeholder="Search VM name..." 
+                               class="search-input" aria-label="Search virtual machines">
+                    </div>
+                    <div class="last-updated">
+                        Last updated: <span id="last-updated-time" aria-live="polite">-</span>
+                    </div>
+                    <button class="btn btn-primary" id="refresh-button" aria-label="Refresh VM data">
+                        <i class="fas fa-sync-alt btn-icon" aria-hidden="true"></i> Refresh
+                    </button>
                 </div>
-                <div class="last-updated" style="margin-right: 1rem; font-size: 0.8rem; color: #666;">
-                    Last updated: <span id="last-updated-time">-</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="vm-table" aria-label="Virtual Machines">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Cluster</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">vCPUs</th>
+                                <th scope="col">Memory</th>
+                                <th scope="col">IP Addresses</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="loading-placeholder">
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
+                                    <div class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> 
+                                        <span>Loading virtual machines...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- VM data will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
-                <button class="btn btn-primary">
-                    <i class="fas fa-sync-alt btn-icon"></i> Refresh
-                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <img src="{{ url_for('static', filename='nutanix_logo.png') }}" 
+                 alt="Nutanix Logo" class="nutanix-logo" loading="lazy">
+            <div class="copyright">
+                &copy; 2025 Nutanix, Inc. All rights reserved.
             </div>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="vm-table">
-                    <thead>
-                        <tr>
-                            <th style="font-weight: bold;">Name</th>
-                            <th style="font-weight: bold;">Cluster</th>
-                            <th style="font-weight: bold;">Status</th>
-                            <th style="font-weight: bold;">vCPUs</th>
-                            <th style="font-weight: bold;">Memory</th>
-                            <th style="font-weight: bold;">IP Addresses</th>
-                            <th style="font-weight: bold;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vmTableBody">
-                        <!-- VM data will be populated here -->
-                    </tbody>
-                </table>
-            </div>
+    </footer>
+
+    <!-- No JavaScript warning -->
+    <noscript>
+        <div class="alert alert-danger" style="position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 1000;">
+            <i class="fas fa-exclamation-circle alert-icon" aria-hidden="true"></i>
+            <span>This application requires JavaScript to function properly. Please enable JavaScript in your browser settings.</span>
         </div>
-    </div>
-</div>
-
-<footer>
-    <div class="footer-container">
-        <img src="https://raw.githubusercontent.com/nutanixed/flask-vm-dashboard/main/templates/nutanix_logo.png" alt="Nutanix Logo" class="nutanix-logo">
-        <div class="copyright">
-            &copy; 2025 Nutanix, Inc. All rights reserved.
-        </div>
-    </div>
-</footer>
-
-<script>
-    // Simulate loading animation
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-            fetchVMs();
-        }, 1000);
-
-        // Add search functionality
-        const searchInput = document.getElementById('vm-search');
-        searchInput.addEventListener('input', filterVMs);
-
-        // Add refresh button functionality
-        const refreshButton = document.querySelector('.btn-primary');
-        refreshButton.addEventListener('click', function() {
-            // Clear the search input
-            searchInput.value = '';
-            // Fetch fresh VM data
-            fetchVMs();
-        });
-
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + R to refresh
-            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-                e.preventDefault();
-                document.querySelector('.btn-primary').click();
-            }
-            // Ctrl/Cmd + F to focus search
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-                e.preventDefault();
-                document.getElementById('vm-search').focus();
-            }
-        });
-    });
-
-    function filterVMs() {
-        const searchTerm = document.getElementById('vm-search').value.toLowerCase();
-        const rows = document.querySelectorAll('#vm-table tbody tr');
-        let hasVisibleRows = false;
-        
-        rows.forEach(row => {
-            if (row.id === 'no-results-row') return; // Skip the no results row
-            const vmName = row.querySelector('td:first-child').textContent.toLowerCase();
-            if (vmName.includes(searchTerm)) {
-                row.style.display = '';
-                hasVisibleRows = true;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Show "No results" message if no VMs match the search
-        const noResultsRow = document.querySelector('#no-results-row');
-        if (!hasVisibleRows && searchTerm) {
-            if (!noResultsRow) {
-                const row = document.createElement('tr');
-                row.id = 'no-results-row';
-                row.innerHTML = `
-                    <td colspan="5" style="text-align: center; color: #666;">
-                        <i class="fas fa-search"></i> No VMs found matching "${searchTerm}"
-                    </td>
-                `;
-                document.querySelector('#vm-table tbody').appendChild(row);
-            }
-        } else if (noResultsRow) {
-            noResultsRow.remove();
-        }
-    }
-
-    function fetchVMs() {
-        const tableBody = document.querySelector('#vm-table tbody');
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading virtual machines...
-                </td>
-            </tr>
-        `;
-        
-        fetch('/api/vms')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const tableBody = document.querySelector('#vm-table tbody');
-                tableBody.innerHTML = ''; // Clear loading message
-                
-                if (data.length === 0) {
-                    showError('No powered on VMs found.');
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td colspan="5" style="text-align: center;">No virtual machines are currently powered on.</td>
-                    `;
-                    tableBody.appendChild(row);
-                } else {
-                    data.forEach(vm => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><strong>${vm.name}</strong></td>
-                            <td>${vm.cluster_name}</td>
-                            <td><span class="status status-active"><i class="fas fa-circle"></i>&nbsp;&nbsp;Running</span></td>
-                            <td>${vm.vcpus}</td>
-                            <td>${vm.memory_gb} GB</td>
-                            <td>${vm.ip_addresses.join(', ') || 'No IP'}</td>
-                            <td>
-                                <a href="${vm.console_url}" 
-                                   class="btn btn-primary console-btn" 
-                                   target="_blank"
-                                   title="Open console in new tab: ${vm.console_url}">
-                                    <i class="fas fa-terminal btn-icon"></i> Console
-                                </a>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                }
-                // Update last updated timestamp
-                const now = new Date();
-                document.getElementById('last-updated-time').textContent = now.toLocaleTimeString();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('Error loading VM data. Please try again later.');
-                const tableBody = document.querySelector('#vm-table tbody');
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: var(--nutanix-danger);">
-                            <i class="fas fa-exclamation-triangle"></i> Unable to load VM data
-                        </td>
-                    </tr>
-                `;
-            });
-    }
-
-    function showError(message) {
-        const errorElement = document.getElementById('error-message');
-        errorElement.style.display = 'flex';
-        errorElement.querySelector('.alert-text').textContent = message;
-    }
-</script>
-
+    </noscript>
+    
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
