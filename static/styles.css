@@ -99,6 +99,12 @@ header {
     align-items: center;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .logo {
     display: flex;
     align-items: center;
@@ -259,6 +265,17 @@ tr:hover {
 .btn-primary:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(93, 59, 232, 0.2);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--nutanix-white);
+    border: 1px solid var(--nutanix-white);
+}
+
+.btn-outline:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
 }
 
 /* Button with loading state */

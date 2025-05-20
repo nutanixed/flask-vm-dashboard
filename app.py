@@ -1,14 +1,15 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 import requests
 from requests.auth import HTTPBasicAuth
 import urllib3
 import os
 import logging
-from functools import lru_cache
+from functools import lru_cache, wraps
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import secrets
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,12 +34,31 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Create Flask app, specify static folder path
 app = Flask(__name__, static_folder='static')
 
+# Set a secret key for session management
+app.secret_key = os.getenv('SECRET_KEY')
+if not app.secret_key:
+    logger.warning("SECRET_KEY not found in environment variables, generating a random one")
+    app.secret_key = secrets.token_hex(16)
+    logger.warning("This will invalidate existing sessions when the server restarts")
+
+# Set session timeout to 12 hours
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=12)
+
 # Initialize rate limiter
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"]
 )
+
+# Dashboard login credentials - must be set in .env file
+DASHBOARD_USERNAME = os.getenv('DASHBOARD_USERNAME')
+DASHBOARD_PASSWORD = os.getenv('DASHBOARD_PASSWORD')
+
+# Validate that credentials are set
+if not DASHBOARD_USERNAME or not DASHBOARD_PASSWORD:
+    logger.error("DASHBOARD_USERNAME and DASHBOARD_PASSWORD must be set in .env file")
+    raise ValueError("Missing dashboard credentials in environment variables")
 
 # Prism Central Configuration from environment variables
 PRISM_IP = os.getenv('PRISM_IP', 'pc33.ntnxlab.local')
@@ -52,6 +72,15 @@ cluster_cache = {
     'data': None,
     'timestamp': None
 }
+
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def is_cache_valid():
     if not cluster_cache['timestamp']:
@@ -95,7 +124,34 @@ def get_cluster_info():
         logger.error(f"Unexpected error getting cluster info: {str(e)}")
         return "Unknown Cluster"
 
+@app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == DASHBOARD_USERNAME and password == DASHBOARD_PASSWORD:
+            session['logged_in'] = True
+            session.permanent = True
+            next_page = request.args.get('next')
+            if next_page and next_page.startswith('/'):
+                return redirect(next_page)
+            return redirect(url_for('home'))
+        else:
+            error = 'Invalid credentials. Please try again.'
+            logger.warning(f"Failed login attempt from {request.remote_addr}")
+    
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
+
 @app.route('/')
+@login_required
 def home():
     return render_template('index.html')
 
@@ -120,6 +176,7 @@ def health_check():
         }), 500
 
 @app.route('/api/vms')
+@login_required
 @limiter.limit("30 per minute")
 def get_vms():
     # Log request
