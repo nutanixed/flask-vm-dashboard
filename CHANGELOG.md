@@ -2,6 +2,30 @@
 
 All notable changes to the Flask VM Dashboard project will be documented in this file.
 
+## [2.0.0] - 2025-01-27
+
+### Added
+- Complete automated deployment script (`deploy.sh`) for production setup
+- Comprehensive Nginx configuration template with SSL support
+- Production-ready systemd service configuration
+- Environment-based configuration management (`config.py`)
+- Health monitoring utilities (`monitor.py`)
+- Complete project structure documentation
+- Quick deployment guide in README.md
+- All necessary configuration templates for complete reproduction
+- Professional deployment documentation
+
+### Changed
+- Updated README.md with complete project structure and quick deployment instructions
+- Enhanced project organization with proper configuration templates
+- Improved deployment process with full automation
+- Better documentation structure with clear setup options
+
+### Fixed
+- Repository now contains all files needed for complete application reproduction
+- Proper separation between development and production configurations
+- Clear deployment instructions for both automated and manual setup
+
 ## [1.1.0] - 2025-05-14
 
 ### Added

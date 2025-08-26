@@ -3,14 +3,16 @@
 
 A simple Flask-based web application that provides a dashboard for monitoring and managing virtual machines. This project includes SSL support via Nginx reverse proxy.
 
-## Recent Updates (v1.1.0)
+## Recent Updates (v2.0.0)
 
-The dashboard has been significantly improved with:
+Major release with production-ready deployment capabilities:
 
-- Enhanced mobile responsiveness with card-style layout on small screens
-- Modern UI with skeleton loading animations and toast notifications
-- Improved error handling with retry mechanism for API requests
-- Better accessibility with proper ARIA attributes and keyboard navigation
+- **🚀 Complete automated deployment** with `deploy.sh` script for one-command setup
+- **⚙️ Production-ready configuration templates** including Nginx SSL and systemd service
+- **📚 Comprehensive documentation** with both quick deployment and manual setup guides
+- **🔧 Environment-based configuration** management for flexible deployments
+- **📊 Health monitoring utilities** and proper error handling
+- **📁 Complete project structure** with all files needed for reproduction
 - See [CHANGELOG.md](CHANGELOG.md) for complete details
 
 ## Features
