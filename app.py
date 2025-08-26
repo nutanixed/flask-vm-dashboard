@@ -61,11 +61,17 @@ if not DASHBOARD_USERNAME or not DASHBOARD_PASSWORD:
     raise ValueError("Missing dashboard credentials in environment variables")
 
 # Prism Central Configuration from environment variables
-PRISM_IP = os.getenv('PRISM_IP', 'pc33.ntnxlab.local')
-PRISM_USERNAME = os.getenv('PRISM_USERNAME', 'admin')
+PRISM_IP = os.getenv('PRISM_IP', 'pc130.ntnxlab.local')
+PRISM_USERNAME = os.getenv('PRISM_USERNAME', 'ntnx.service')
 PRISM_PASSWORD = os.getenv('PRISM_PASSWORD', 'Nutanix/4u!')
 API_TIMEOUT = int(os.getenv('API_TIMEOUT', '30'))
 CLUSTER_CACHE_TTL = int(os.getenv('CLUSTER_CACHE_TTL', '300'))  # 5 minutes default
+CONSOLE_BASE_URL = os.getenv('CONSOLE_BASE_URL', 'https://ntnxlab.ddns.net:8443')
+
+# Validate Prism Central configuration
+if not PRISM_IP or not PRISM_USERNAME or not PRISM_PASSWORD:
+    logger.error("PRISM_IP, PRISM_USERNAME, and PRISM_PASSWORD must be set in .env file")
+    raise ValueError("Missing Prism Central credentials in environment variables")
 
 # Cache for cluster info with TTL
 cluster_cache = {
@@ -78,6 +84,9 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'logged_in' not in session:
+            # Check if this is an AJAX request (API call)
+            if request.is_json or request.headers.get('Accept', '').startswith('application/json') or request.path.startswith('/api/'):
+                return jsonify({"error": "Authentication required", "redirect": "/login"}), 401
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
@@ -129,10 +138,15 @@ def get_cluster_info():
 def login():
     error = None
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
         
-        if username == DASHBOARD_USERNAME and password == DASHBOARD_PASSWORD:
+        # Basic input validation
+        if not username or not password:
+            error = 'Username and password are required'
+        elif len(username) > 100 or len(password) > 100:
+            error = 'Invalid credentials'
+        elif username == DASHBOARD_USERNAME and password == DASHBOARD_PASSWORD:
             session['logged_in'] = True
             session.permanent = True
             next_page = request.args.get('next')
@@ -140,8 +154,9 @@ def login():
                 return redirect(next_page)
             return redirect(url_for('home'))
         else:
-            error = 'Invalid credentials. Please try again.'
-            logger.warning(f"Failed login attempt from {request.remote_addr}")
+            if not error:  # Only set error if not already set by validation
+                error = 'Invalid credentials. Please try again.'
+            logger.warning(f"Failed login attempt from {request.remote_addr} for username: {username}")
     
     return render_template('login.html', error=error)
 
@@ -179,7 +194,7 @@ def health_check():
 @login_required
 @limiter.limit("30 per minute")
 def get_vms():
-    # Log request
+    """Get list of VMs from Prism Central"""
     logger.info(f"VM list requested from {request.remote_addr}")
     
     url = f"https://{PRISM_IP}:9440/api/nutanix/v3/vms/list"
@@ -207,7 +222,7 @@ def get_vms():
             try:
                 status = vm.get("status", {})
                 resources = status.get("resources", {})
-                spec = resources.get("vm_features", {})
+                spec = vm.get("spec", {})
                 
                 name = status.get("name")
                 uuid = vm.get("metadata", {}).get("uuid")
@@ -232,7 +247,7 @@ def get_vms():
                             ip_addresses.append(ip_endpoint["ip"])
 
                 if power_state == "ON":
-                    console_url = f"https://ntnxlab.ddns.net:8443/console/vnc_auto.html?path=proxy/{uuid}"
+                    console_url = f"{CONSOLE_BASE_URL}/console/vnc_auto.html?path=proxy/{uuid}"
                     vms.append({
                         "name": name,
                         "uuid": uuid,
@@ -247,7 +262,13 @@ def get_vms():
                 continue
 
         vms.sort(key=lambda x: x["name"].lower())
-        return jsonify(vms)
+        
+        # Create response with cache control headers
+        response = jsonify(vms)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
 
     except requests.exceptions.RequestException as e:
         logger.error(f"API connection failed: {str(e)}")

@@ -1,4 +1,12 @@
+# Core Flask dependencies
 flask==3.0.2
 requests==2.31.0
 python-dotenv==1.0.1
 flask-limiter==3.5.0
+
+# Production server (optional)
+gunicorn==21.2.0
+
+# Security and utilities
+urllib3>=1.26.0,<2.0.0
+werkzeug>=3.0.0,<4.0.0

@@ -25,6 +25,9 @@ The dashboard has been significantly improved with:
 - Reverse proxy using Nginx
 - SSL encryption with Let's Encrypt or custom SSL certificates
 - Basic HTTP authentication (optional)
+- Optimized caching and error handling
+- Environment-based configuration
+- Input validation and security enhancements
 
 ## Requirements
 

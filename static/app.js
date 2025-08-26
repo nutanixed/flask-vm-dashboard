@@ -132,19 +132,28 @@ const filterVMs = () => {
 
 // Fetch with retry functionality
 const fetchWithRetry = async (url, options = {}, retries = 2, delay = 1000) => {
-    try {
-        const response = await fetch(url, options);
-        if (response.ok) return response;
-        throw new Error(`HTTP error! Status: ${response.status}`);
-    } catch (error) {
-        if (retries <= 0) throw error;
-        
-        // Wait for the specified delay
-        await new Promise(resolve => setTimeout(resolve, delay));
-        
-        // Retry with one less retry attempt
-        console.log(`Retrying fetch to ${url}, ${retries} attempts left`);
-        return fetchWithRetry(url, options, retries - 1, delay);
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            
+            // Return successful responses or authentication errors (don't retry auth errors)
+            if (response.ok || response.status === 401) {
+                return response;
+            }
+            
+            // For other errors, throw to trigger retry
+            throw new Error(`HTTP error! Status: ${response.status}`);
+            
+        } catch (error) {
+            // If this is the last attempt, throw the error
+            if (attempt === retries) {
+                throw error;
+            }
+            
+            // Wait before retrying
+            console.log(`Retrying fetch to ${url}, ${retries - attempt} attempts left`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
     }
 };
 
@@ -198,10 +207,43 @@ const fetchVMs = async () => {
         const response = await fetchWithRetry('/api/vms', {}, 2, 1000);
         
         if (!response.ok) {
+            if (response.status === 401) {
+                // Handle authentication error
+                try {
+                    const errorData = await response.json();
+                    // Show a user-friendly message before redirecting
+                    showToast({
+                        title: 'Session Expired',
+                        message: 'Your session has expired. Redirecting to login...',
+                        type: 'warning',
+                        duration: 2000
+                    });
+                    
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        if (errorData.redirect) {
+                            window.location.href = errorData.redirect;
+                        } else {
+                            window.location.href = '/login';
+                        }
+                    }, 2000);
+                    return;
+                } catch (e) {
+                    // If we can't parse the JSON, just redirect to login
+                    window.location.href = '/login';
+                    return;
+                }
+            }
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            console.error('Failed to parse JSON response:', jsonError);
+            throw new Error('Invalid response from server. Please refresh the page and try again.');
+        }
         
         // Clear loading message
         tableBody.innerHTML = ''; 

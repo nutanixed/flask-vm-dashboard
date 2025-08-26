@@ -6,3 +6,4 @@ templates/index.html.initial
 templates/index.html.keep
 app.py.keep
 .env
+cookies.txt
