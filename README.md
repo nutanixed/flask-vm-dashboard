@@ -95,60 +95,43 @@ sudo yum install nginx
 
 ### Create Nginx Configuration
 
-Create a new configuration file for your Flask application:
+**Option 1: Use the repository template (Recommended)**
+
+Copy the included Nginx configuration from the repository:
+
+```bash
+sudo cp /opt/flask-vm-dashboard/etc/nginx/conf.d/flask_vm_dashboard.conf /etc/nginx/conf.d/
+```
+
+**Option 2: Create manually**
+
+Create a new configuration file:
 
 ```bash
 sudo nano /etc/nginx/conf.d/flask_vm_dashboard.conf
 ```
 
-### Basic Configuration (HTTP Only)
+### Production SSL Configuration (Working Setup)
 
-If you want to start with a simple HTTP configuration:
-
-```nginx
-server {
-    listen 80;
-    server_name your_domain_or_ip;
-
-    access_log /var/log/nginx/flask_vm_dashboard_access.log;
-    error_log /var/log/nginx/flask_vm_dashboard_error.log;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### SSL Configuration with Basic Authentication (Current Setup)
-
-The current setup uses HTTPS with SSL and HTTP Basic Authentication:
+Use this configuration (included in the repository at `etc/nginx/conf.d/flask_vm_dashboard.conf`):
 
 ```nginx
 server {
     listen 80;
-    server_name your_domain_or_ip;
+    server_name ntnxlab.ddns.net;
 
-    # Redirect all HTTP traffic to HTTPS
+    # Redirect all HTTP to HTTPS
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name your_domain_or_ip;
+    server_name ntnxlab.ddns.net;
 
-    # SSL certificate paths
     ssl_certificate /opt/flask-vm-dashboard/certs/fullchain.pem;
     ssl_certificate_key /opt/flask-vm-dashboard/certs/privkey.pem;
 
-    # Reverse proxy to Flask app with Basic Authentication
     location / {
-        auth_basic "Restricted Content";
-        auth_basic_user_file /etc/nginx/.htpasswd;
-
         proxy_pass http://127.0.0.1:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -157,6 +140,8 @@ server {
     }
 }
 ```
+
+**Important:** Replace `ntnxlab.ddns.net` with your actual domain name or IP address.
 
 ### Setting Up HTTP Basic Authentication
 
