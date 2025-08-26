@@ -138,15 +138,67 @@ For detailed manual setup instructions, see below.
 
 ## Manual Setup
 
-1. **Install Dependencies**
+1. **Set Up Python Virtual Environment**
 
-First, install the Python dependencies using `pip`:
+First, create and activate a Python virtual environment to isolate dependencies:
 
 ```bash
+# Navigate to the project directory
+cd /opt/flask-vm-dashboard
+
+# Create virtual environment
+python3 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Install Python dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-2. **Configure Nginx for Reverse Proxy**
+**Note:** Always activate the virtual environment before running the application:
+```bash
+source .venv/bin/activate
+```
+
+2. **Configure Environment Variables**
+
+Create and configure the `.env` file with your specific settings:
+
+```bash
+# Copy the example file (if available) or create a new one
+cp .env.example .env  # If example exists
+# OR create new file:
+nano .env
+```
+
+**Required environment variables in `.env`:**
+```bash
+# Dashboard Authentication
+DASHBOARD_USERNAME=your_username
+DASHBOARD_PASSWORD=your_secure_password
+
+# Prism Central Configuration
+PRISM_IP=your_prism_ip_or_hostname
+PRISM_USERNAME=your_prism_username
+PRISM_PASSWORD=your_prism_password
+
+# Application Security
+SECRET_KEY=your_secret_key_here
+
+# API Configuration
+API_TIMEOUT=30
+CLUSTER_CACHE_TTL=300
+CONSOLE_BASE_URL=https://your_console_url
+```
+
+**Important:** 
+- Replace all placeholder values with your actual configuration
+- Keep the `.env` file secure and never commit it to version control
+- Generate a strong `SECRET_KEY` using: `python3 -c "import secrets; print(secrets.token_hex(32))"`
+
+3. **Configure Nginx for Reverse Proxy**
 
 Nginx can be used as a reverse proxy to serve your Flask application with improved performance, security, and SSL support. Follow these steps to configure Nginx:
 
@@ -347,7 +399,7 @@ sudo chmod -R 644 /opt/flask-vm-dashboard/certs
 sudo chmod 600 /opt/flask-vm-dashboard/certs/privkey.pem
 ```
 
-3. **Set Up and Start Flask Application**
+4. **Set Up and Start Flask Application**
 
 There are several ways to run your Flask application. The current setup uses a systemd service to run the Flask app directly with Python.
 
