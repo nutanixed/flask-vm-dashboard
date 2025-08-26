@@ -52,18 +52,89 @@ pip install -r requirements.txt
 ```
 flask-vm-dashboard/
 ├── app.py                        # Flask application entry point
+├── config.py                     # Configuration management
+├── monitor.py                    # Monitoring utilities
+├── start.sh                      # Development startup script
+├── deploy.sh                     # Production deployment script
+├── .env                          # Environment variables
 ├── .venv/                        # Virtual environment (gitignored)
-├── certs/                        # SSL certificates (not included in repo)
+├── certs/                        # SSL certificates directory
+│   ├── fullchain.pem            # SSL certificate
+│   └── privkey.pem              # SSL private key
 ├── templates/                    # HTML templates
-│   └── index.html                # Main index page
-├── static/                       # Static files (optional: CSS, JS, fonts, etc.)
-├── flask_vm_dashboard.service    # Systemd service for running Flask app
+│   ├── index.html               # Main dashboard page
+│   ├── login.html               # Login page
+│   ├── 404.html                 # 404 error page
+│   └── 500.html                 # 500 error page
+├── static/                       # Static files
+│   ├── styles.css               # Main stylesheet
+│   ├── app.js                   # JavaScript functionality
+│   ├── favicon.svg              # Site favicon
+│   └── nutanix_logo.png         # Logo image
+├── etc/                          # Configuration templates
+│   └── nginx/
+│       └── conf.d/
+│           └── flask_vm_dashboard.conf  # Nginx configuration template
+├── flask_vm_dashboard.service    # Systemd service file
 ├── requirements.txt              # Python dependencies
+├── DEPLOYMENT.md                 # Detailed deployment guide
+├── CHANGELOG.md                  # Version history
 ├── .gitignore                    # Git ignore file
 └── README.md                     # Project overview and instructions
 ```
 
-## Setup
+### Repository Files for Complete Reproduction
+
+This repository contains **ALL** necessary files to reproduce the application:
+
+**Core Application:**
+- `app.py` - Main Flask application
+- `config.py` - Environment-based configuration
+- `monitor.py` - Health monitoring utilities
+- `.env` - Environment variables (configure for your setup)
+
+**Web Assets:**
+- `templates/` - All HTML templates
+- `static/` - CSS, JavaScript, images, and favicon
+
+**Deployment Configuration:**
+- `flask_vm_dashboard.service` - Systemd service configuration
+- `etc/nginx/conf.d/flask_vm_dashboard.conf` - Nginx reverse proxy configuration
+- `certs/` - SSL certificate directory (add your certificates here)
+
+**Automation Scripts:**
+- `start.sh` - Development startup with validation
+- `deploy.sh` - Complete production deployment automation
+
+**Documentation:**
+- `DEPLOYMENT.md` - Comprehensive deployment guide
+- `CHANGELOG.md` - Version history and updates
+- `README.md` - This file
+
+## Quick Deployment
+
+For automated deployment, use the included deployment script:
+
+```bash
+# Clone the repository
+git clone <your-repo-url> /opt/flask-vm-dashboard
+cd /opt/flask-vm-dashboard
+
+# Run automated deployment
+chmod +x deploy.sh
+./deploy.sh
+```
+
+This will automatically:
+- Set up Python virtual environment
+- Install all dependencies
+- Configure systemd service
+- Set up Nginx with SSL
+- Start all services
+
+For detailed manual setup instructions, see below.
+
+## Manual Setup
 
 1. **Install Dependencies**
 
