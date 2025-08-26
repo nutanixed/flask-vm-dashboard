@@ -60,18 +60,39 @@ if not DASHBOARD_USERNAME or not DASHBOARD_PASSWORD:
     logger.error("DASHBOARD_USERNAME and DASHBOARD_PASSWORD must be set in .env file")
     raise ValueError("Missing dashboard credentials in environment variables")
 
-# Prism Central Configuration from environment variables
-PRISM_IP = os.getenv('PRISM_IP', 'pc130.ntnxlab.local')
-PRISM_USERNAME = os.getenv('PRISM_USERNAME', 'ntnx.service')
-PRISM_PASSWORD = os.getenv('PRISM_PASSWORD', 'Nutanix/4u!')
-API_TIMEOUT = int(os.getenv('API_TIMEOUT', '30'))
-CLUSTER_CACHE_TTL = int(os.getenv('CLUSTER_CACHE_TTL', '300'))  # 5 minutes default
-CONSOLE_BASE_URL = os.getenv('CONSOLE_BASE_URL', 'https://ntnxlab.ddns.net:8443')
+# Prism Central Configuration from environment variables - all required
+PRISM_IP = os.getenv('PRISM_IP')
+PRISM_USERNAME = os.getenv('PRISM_USERNAME')
+PRISM_PASSWORD = os.getenv('PRISM_PASSWORD')
+CONSOLE_BASE_URL = os.getenv('CONSOLE_BASE_URL')
 
-# Validate Prism Central configuration
-if not PRISM_IP or not PRISM_USERNAME or not PRISM_PASSWORD:
-    logger.error("PRISM_IP, PRISM_USERNAME, and PRISM_PASSWORD must be set in .env file")
-    raise ValueError("Missing Prism Central credentials in environment variables")
+# API Configuration - with defaults for non-critical settings
+API_TIMEOUT_STR = os.getenv('API_TIMEOUT')
+CLUSTER_CACHE_TTL_STR = os.getenv('CLUSTER_CACHE_TTL')
+
+# Validate all required environment variables
+required_vars = {
+    'PRISM_IP': PRISM_IP,
+    'PRISM_USERNAME': PRISM_USERNAME,
+    'PRISM_PASSWORD': PRISM_PASSWORD,
+    'CONSOLE_BASE_URL': CONSOLE_BASE_URL,
+    'API_TIMEOUT': API_TIMEOUT_STR,
+    'CLUSTER_CACHE_TTL': CLUSTER_CACHE_TTL_STR
+}
+
+missing_vars = [var for var, value in required_vars.items() if not value]
+if missing_vars:
+    logger.error(f"Missing required environment variables: {missing_vars}")
+    logger.error("All variables must be set in .env file")
+    raise ValueError(f"Missing required environment variables: {missing_vars}")
+
+# Convert string values to integers
+try:
+    API_TIMEOUT = int(API_TIMEOUT_STR)
+    CLUSTER_CACHE_TTL = int(CLUSTER_CACHE_TTL_STR)
+except ValueError as e:
+    logger.error(f"Invalid integer values in environment variables: {e}")
+    raise ValueError(f"API_TIMEOUT and CLUSTER_CACHE_TTL must be valid integers")
 
 # Cache for cluster info with TTL
 cluster_cache = {
